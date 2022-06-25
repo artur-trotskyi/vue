@@ -2,7 +2,8 @@
   <div class="app">
     <post-form
         @create="createPost"
-    ></post-form>
+    >
+    </post-form>
     <post-list
         :posts="posts"
         @remove="removePost"
