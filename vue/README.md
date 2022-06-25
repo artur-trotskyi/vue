@@ -1,8 +1,13 @@
 docker compose build
 docker compose up -d
 docker compose exec webserver bash
+npm install npm-watch
 npm install
 npm run build
+npm run watch
+
+
+https://www.youtube.com/watch?v=XzLuMtDelGk
 
 # html
 
