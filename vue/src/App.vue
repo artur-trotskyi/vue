@@ -37,19 +37,22 @@
         >
         </post-list>-->
     <div v-else>Posts Loading ...</div>
-    <div class="page__wrapper">
-      <div
-          v-for="pageNumber in totalPages"
-          :key="pageNumber"
-          class="page"
-          :class="{
-            'current-page': page === pageNumber
-          }"
-          @click="changePage(pageNumber)"
-      >
-        {{ pageNumber }}
-      </div>
-    </div>
+    <div ref="observer" class="observer"></div>
+    <!--
+        <div class="page__wrapper">
+          <div
+              v-for="pageNumber in totalPages"
+              :key="pageNumber"
+              class="page"
+              :class="{
+                'current-page': page === pageNumber
+              }"
+              @click="changePage(pageNumber)"
+          >
+            {{ pageNumber }}
+          </div>
+        </div>
+    -->
   </div>
 </template>
 
@@ -78,7 +81,7 @@ export default {
       selectedSort: '',
       searchQuery: '',
       page: 1,
-      limit: 3,
+      limit: 2,
       totalPages: 0,
       sortOptions: [
         {value: 'title', name: 'By Title'},
@@ -97,12 +100,14 @@ export default {
     showDialog() {
       this.dialogVisible = true;
     },
+    /*
     changePage(pageNumber) {
       this.page = pageNumber;
     },
+    */
     async fetchPosts() {
-      this.isPostsLoading = true;
       try {
+        this.isPostsLoading = true;
         const response = await axios.get('https://jsonplaceholder.typicode.com/posts', {
           params: {
             _page: this.page,
@@ -116,10 +121,39 @@ export default {
       } finally {
         this.isPostsLoading = false;
       }
+    },
+    async loadMorePosts() {
+      try {
+        this.page += 1;
+        const response = await axios.get('https://jsonplaceholder.typicode.com/posts', {
+          params: {
+            _page: this.page,
+            _limit: this.limit,
+          }
+        });
+        this.totalPages = Math.ceil(response.headers['x-total-count'] / this.limit);
+        this.posts = [...this.posts, ...response.data]; // add to array end
+      } catch (e) {
+        alert('Error')
+      }
     }
   },
   mounted() {
     this.fetchPosts();
+    const options = {
+      rootMargin: '0px',
+      threshold: 1.0
+    };
+    const callback = (entries, observer) => {
+      console.log(entries)
+      console.log(this.page)
+      console.log(this.totalPages)
+      if (entries[0].isIntersecting) {
+        this.loadMorePosts();
+      }
+    };
+    const observer = new IntersectionObserver(callback, options);
+    observer.observe(this.$refs.observer);
   },
   computed: {
     sortedPosts() {
@@ -130,14 +164,18 @@ export default {
     }
   },
   watch: {
+    /*
     page() {
       this.fetchPosts();
     }
-    /*selectedSort(newValue) {
+    */
+    /*
+    selectedSort(newValue) {
       this.posts.sort((post1, post2) => {
         return post1[newValue]?.localeCompare(post2[newValue])
       });
-    }*/
+    }
+    */
   }
 }
 </script>
@@ -171,5 +209,9 @@ export default {
 
 .current-page {
   border: 2px solid teal;
+}
+
+.observer {
+  height: 30px;
 }
 </style>
