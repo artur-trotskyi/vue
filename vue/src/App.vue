@@ -1,12 +1,18 @@
 <template>
   <div class="app">
     <h1>Posts Page</h1>
-    <my-button
-        @click="showDialog"
-        style="margin: 15px 0;"
-    >
-      Create Post
-    </my-button>
+    <div class="app__btns">
+      <my-button
+          @click="showDialog"
+      >
+        Create Post
+      </my-button>
+      <my-select
+          v-model="selectedSort"
+          :options="sortOptions"
+      >
+      </my-select>
+    </div>
     <my-dialog v-model:show="dialogVisible">
       <post-form
           @create="createPost"
@@ -14,11 +20,17 @@
       </post-form>
     </my-dialog>
     <post-list
-        :posts="posts"
+        :posts="selectedPosts"
         @remove="removePost"
         v-if="!isPostsLoading"
     >
     </post-list>
+<!--    <post-list
+        :posts="posts"
+        @remove="removePost"
+        v-if="!isPostsLoading"
+    >
+    </post-list>-->
     <div v-else>Posts Loading ...</div>
   </div>
 </template>
@@ -28,20 +40,28 @@ import PostForm from "@/components/PostForm";
 import PostList from "@/components/PostList";
 import MyDialog from "@/components/UI/MyDialog";
 import MyButton from "@/components/UI/MyButton";
+import MySelect from "@/components/UI/MySelect";
 import axios from 'axios';
 
 export default {
   name: "App",
   components: {
+    MySelect,
     MyButton,
     MyDialog,
-    PostForm, PostList
+    PostForm,
+    PostList
   },
   data() {
     return {
       posts: [],
       dialogVisible: false,
       isPostsLoading: false,
+      selectedSort: '',
+      sortOptions: [
+        {value: 'title', name: 'By Title'},
+        {value: 'body', name: 'By Body'},
+      ]
     }
   },
   methods: {
@@ -69,6 +89,18 @@ export default {
   },
   mounted() {
     this.fetchPosts();
+  },
+  computed: {
+    selectedPosts() {
+      return [...this.posts].sort((post1, post2) => post1[this.selectedSort]?.localeCompare(post2[this.selectedSort]));
+    }
+  },
+  watch: {
+    /*selectedSort(newValue) {
+      this.posts.sort((post1, post2) => {
+        return post1[newValue]?.localeCompare(post2[newValue])
+      });
+    }*/
   }
 }
 </script>
@@ -82,5 +114,11 @@ export default {
 
 .app {
   padding: 20px;
+}
+
+.app__btns {
+  margin: 15px 0;
+  display: flex;
+  justify-content: space-between;
 }
 </style>
