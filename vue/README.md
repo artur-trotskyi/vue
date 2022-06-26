@@ -6,6 +6,8 @@ npm install
 npm run build
 npm run watch
 
+npm i axios
+
 
 https://www.youtube.com/watch?v=XzLuMtDelGk
 
